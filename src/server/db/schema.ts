@@ -1,5 +1,5 @@
 // src/server/db/schema.ts
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm"; // <-- ADDED 'relations' IMPORT
 import {
 	pgTable,
 	serial,
@@ -16,18 +16,16 @@ export const posts = pgTable(
 	{
 		id: serial("id").notNull(),
 		title: text("title").notNull(),
-		slug: text("slug").notNull(), // For SEO-friendly URLs
+		slug: text("slug").notNull(),
 		content: text("content").notNull(),
-		published: boolean("published").default(false).notNull(), // Draft vs Published
+		published: boolean("published").default(false).notNull(),
 		createdAt: timestamp("created_at")
 			.default(sql`CURRENT_TIMESTAMP`)
 			.notNull(),
 		updatedAt: timestamp("updated_at"),
 	},
 	(table) => ({
-		// Set 'id' as the primary key
 		pk: primaryKey({ columns: [table.id] }),
-		// Ensure slugs are unique for posts
 		slugIdx: uniqueIndex("post_slug_idx").on(table.slug),
 	}),
 );
@@ -38,7 +36,7 @@ export const categories = pgTable(
 	{
 		id: serial("id").notNull(),
 		name: text("name").notNull(),
-		slug: text("slug").notNull(), // Unique slug for category filtering
+		slug: text("slug").notNull(),
 	},
 	(table) => ({
 		pk: primaryKey({ columns: [table.id] }),
@@ -50,11 +48,39 @@ export const categories = pgTable(
 export const postsToCategories = pgTable(
 	"posts_to_categories",
 	{
+		// NOTE: The 'references' here are for PostgreSQL FOREIGN KEY constraints
 		postId: serial("post_id").references(() => posts.id),
 		categoryId: serial("category_id").references(() => categories.id),
 	},
 	(t) => ({
-		// A post can only be assigned to a category once
 		pk: primaryKey({ columns: [t.postId, t.categoryId] }),
 	}),
 );
+
+// --- 4. DRIZZLE RELATIONS (This is the FIX for your runtime error) ---
+
+// Defines relationships for the 'posts' table
+export const postsRelations = relations(posts, ({ many }) => ({
+	// A Post can have many PostsToCategories links
+	postsToCategories: many(postsToCategories),
+}));
+
+// Defines relationships for the 'categories' table
+export const categoriesRelations = relations(categories, ({ many }) => ({
+	// A Category can have many PostsToCategories links
+	postsToCategories: many(postsToCategories),
+}));
+
+// Defines relationships for the 'postsToCategories' (Join Table)
+export const postsToCategoriesRelations = relations(postsToCategories, ({ one }) => ({
+	// Each link belongs to ONE post
+	post: one(posts, {
+		fields: [postsToCategories.postId],
+		references: [posts.id],
+	}),
+	// Each link belongs to ONE category
+	category: one(categories, {
+		fields: [postsToCategories.categoryId],
+		references: [categories.id],
+	}),
+}));

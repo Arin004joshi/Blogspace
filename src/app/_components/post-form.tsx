@@ -1,0 +1,165 @@
+// src/app/_components/post-form.tsx
+"use client";
+
+import { z } from "zod";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { api } from "@/trpc/react";
+import { useRouter } from "next/navigation";
+import { createPostSchema } from "@/server/api/zod-schemas";
+
+// --- START OF FINAL FIX: RHF/Zod Type Adaptation ---
+
+// 1. Define a temporary schema that represents the RAW data coming from the HTML form.
+// This schema accepts STRING arrays for the category IDs.
+const RHFPostSchema = z.object({
+    title: z.string().min(3, "Title must be at least 3 characters."),
+    content: z.string().min(10, "Content must be at least 10 characters."),
+    published: z.boolean(),
+    // RHF/HTML checkbox value is always a string array
+    categoryIds: z.array(z.string()), 
+}); 
+
+// 2. Define the FINAL schema used for the mutation payload (the type tRPC expects).
+// This schema uses the RAW schema as a base and then performs the required transformation.
+const MutationSchema = RHFPostSchema.extend({
+    // We transform the string array to a number array
+    categoryIds: z.array(z.string()).transform((val) => 
+        val.map(id => Number(id)).filter(id => !isNaN(id))
+    ).optional(), // Make optional again for the final payload
+});
+
+
+// 3. Infer the types from these schemas
+type FormInput = z.infer<typeof RHFPostSchema>; 
+type MutationInput = z.infer<typeof MutationSchema>; // This will match your createPostSchema structure
+
+// --- END OF FINAL FIX ---
+
+const useCategories = () => api.category.getAll.useQuery();
+
+export function PostForm() {
+    const router = useRouter();
+    const { data: categories = [], isLoading: isLoadingCategories } = useCategories();
+    
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        reset,
+    } = useForm<FormInput>({ 
+        // 4. Use the RAW schema for the resolver validation
+        // This tells RHF that the data it receives from the form is string[]
+        resolver: zodResolver(RHFPostSchema), 
+        defaultValues: {
+            title: "",
+            content: "",
+            published: false,
+            categoryIds: [],
+        },
+    });
+
+    const createPost = api.post.create.useMutation({
+        onSuccess: (postId) => {
+            alert("Post created successfully! ID: " + postId);
+            reset(); 
+        },
+        onError: (err) => {
+            console.error(err);
+            alert(`Error creating post: ${err.message}`);
+        },
+    });
+
+    // 5. Submit Handler: Use the RHFPostSchema to validate, then transform and mutate
+    const onSubmit: SubmitHandler<FormInput> = (rawFormData) => {
+        // Use the MutationSchema to parse and transform the data.
+        // Zod performs the string[] -> number[] conversion here.
+        const parsedResult = MutationSchema.safeParse(rawFormData);
+        
+        if (!parsedResult.success) {
+            console.error("Form data parsing error:", parsedResult.error);
+            alert("Internal form validation failed.");
+            return;
+        }
+
+        const mutationPayload: MutationInput = {
+            ...parsedResult.data,
+            // Ensure categoryIds is explicitly the number[] type or undefined
+            categoryIds: parsedResult.data.categoryIds, 
+        }
+
+        createPost.mutate(mutationPayload as MutationInput); 
+    };
+
+    return (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-3xl mx-auto p-6 bg-gray-50 rounded-lg shadow-lg">
+            <h2 className="text-3xl font-bold text-gray-800">Create New Post</h2>
+
+            {/* Title Field */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Title</label>
+                <input
+                    {...register("title")}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3"
+                    placeholder="A captivating title..."
+                />
+                {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title.message}</p>}
+            </div>
+
+            {/* Content Editor (Simple Text Area / Markdown Shortcut) */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Content (Markdown)</label>
+                <textarea
+                    {...register("content")}
+                    rows={15}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3"
+                    placeholder="Write your post content here using Markdown..."
+                />
+                {errors.content && <p className="mt-1 text-xs text-red-600">{errors.content.message}</p>}
+            </div>
+
+            {/* Category Selection */}
+            <div className="border p-4 rounded-md">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Categories</label>
+                {isLoadingCategories && <p>Loading categories...</p>}
+                <div className="flex flex-wrap gap-4">
+                    {categories.map((cat) => (
+                        <label key={cat.id} className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                value={cat.id} // Ensure this is the ID number
+                                {...register("categoryIds")}
+                                className="rounded text-indigo-600 focus:ring-indigo-500"
+                            />
+                            <span className="text-sm text-gray-900">{cat.name}</span>
+                        </label>
+                    ))}
+                </div>
+            </div>
+
+            {/* Published Checkbox */}
+            <div className="flex items-center space-x-2">
+                <input
+                    type="checkbox"
+                    {...register("published")}
+                    className="rounded text-green-600 focus:ring-green-500"
+                />
+                <label className="text-sm font-medium text-gray-700">Publish Immediately?</label>
+            </div>
+
+            <button
+                type="submit"
+                className="w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150"
+                disabled={createPost.isPending}
+            >
+                {createPost.isPending ? "Creating Post..." : "Create Post"}
+            </button>
+
+            {createPost.isError && (
+                <p className="text-red-500 text-sm mt-2">
+                    An unexpected error occurred: {createPost.error.message}
+                </p>
+            )}
+        </form>
+    );
+}

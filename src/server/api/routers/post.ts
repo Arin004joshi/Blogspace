@@ -8,6 +8,13 @@ import { and, eq, inArray } from "drizzle-orm";
 import slugify from "slugify";
 
 export const postRouter = createTRPCRouter({
+
+	hello: publicProcedure
+		.input(z.object({ name: z.string().optional() }).optional())
+		.query(({ input }) => {
+			return { message: `Hello ${input?.name ?? "World"}!` };
+		}),
+
 	// C: CREATE
 	create: publicProcedure
 		.input(createPostSchema)
@@ -51,11 +58,11 @@ export const postRouter = createTRPCRouter({
 	// R: READ ALL (with categories included)
 	getAll: publicProcedure.query(async () => {
 		return db.query.posts.findMany({
-			// Eager load the category relationships
+			// This 'with' clause requires Drizzle relations to be defined!
 			with: {
 				postsToCategories: {
 					with: {
-						category: true, // Also fetch the category details
+						category: true,
 					},
 				},
 			},
