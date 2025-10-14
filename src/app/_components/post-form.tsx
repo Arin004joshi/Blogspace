@@ -100,7 +100,7 @@ export function PostForm() {
                 <label className="block text-sm font-medium text-gray-700">Title</label>
                 <input
                     {...register("title")}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3"
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
                     placeholder="A captivating title..."
                 />
                 {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title.message}</p>}
@@ -112,7 +112,7 @@ export function PostForm() {
                 <textarea
                     {...register("content")}
                     rows={15}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3"
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
                     placeholder="Write your post content here using Markdown..."
                 />
                 {errors.content && <p className="mt-1 text-xs text-red-600">{errors.content.message}</p>}

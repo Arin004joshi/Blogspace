@@ -68,7 +68,7 @@ export default function CategoryManagementPage() {
             <h1 className="text-4xl font-bold mb-8">Category Management</h1>
 
             {/* Create New Category Form */}
-            <form onSubmit={handleSubmit(onCreate)} className="mb-8 p-6 border rounded-lg shadow-md bg-white">
+            <form onSubmit={handleSubmit(onCreate)} className="mb-8 p-6 border rounded-lg shadow-md bg-white dark:bg-gray-800">
                 <h2 className="text-2xl font-semibold mb-4">Create New Category</h2>
                 <div className="flex gap-4 items-end">
                     <div className="flex-grow">
@@ -102,7 +102,7 @@ export default function CategoryManagementPage() {
             {!isFetching && categories.length > 0 && (
                 <ul className="space-y-3">
                     {categories.map((cat) => (
-                        <li key={cat.id} className="flex justify-between items-center p-3 border rounded-md bg-gray-50">
+                        <li key={cat.id} className="flex justify-between items-center p-3 border rounded-md bg-gray-50 dark:bg-gray-700">
                             <span className="font-medium text-gray-900">{cat.name} ({cat.slug})</span>
                             <button
                                 onClick={() => onDelete(cat.id)}

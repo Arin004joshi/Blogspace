@@ -11,7 +11,7 @@ interface PostPageProps {
 
 export default async function IndividualPostPage({ params }: PostPageProps) {
     // 1. Server-side fetch one post by slug
-    const post = await api.post.getBySlug.query({ slug: params.slug });
+    const post = await api.post.getBySlug({ slug: params.slug });
 
     // 2. Handle 404 Case
     if (!post || !post.published) {

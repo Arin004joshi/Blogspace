@@ -1,74 +1,76 @@
 // src/app/page.tsx
 import Link from "next/link";
-import { api } from "@/trpc/server"; // Server-side tRPC utility
-import { HydrateClient } from "@/trpc/server";
-import parse from "html-react-parser"; // Need to install: npm install html-react-parser
-import type { Key, ReactElement, JSXElementConstructor, ReactNode, ReactPortal } from "react";
+// Simple icons for demonstration
+const HomeIcon = (props: { className: string }) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.955-8.955c.49-.49 1.285-.49 1.775 0L21.75 12m-2.25 2.25l-2.75 2.75m-6-6v6m0-6H6.75M9 6v6m0-6h2.25" /></svg>;
+const PencilSquareIcon = (props: { className: string }) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 18.07a4.5 4.5 0 01-1.897 1.13L6 20l1.128-3.372a4.5 4.5 0 011.13-1.897l8.283-8.283z" /><path strokeLinecap="round" strokeLinejoin="round" d="M10.582 18.07L16.863 11.79" /></svg>;
+const CloudArrowUpIcon = (props: { className: string }) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3.75 3.75M12 9.75L8.25 13.5m-3.75 5.25a3 3 0 01-3-3V12a2.25 2.25 0 014.5 0v3.75a2.25 2.25 0 004.5 0V12a2.25 2.25 0 014.5 0v3.75a2.25 2.25 0 004.5 0V12a3 3 0 00-3-3M15 9.75V6.75a3.75 3.75 0 00-7.5 0v3.0" /></svg>;
 
-// Helper function to format the content snippet
-const getPostSnippet = (content: string, length = 150) => {
-    // Strip simple markdown characters like ** and * for the snippet
-    const cleanText = content.replace(/(\*\*|__|\*|_|#)/g, '').trim();
-    return cleanText.length > length
-        ? cleanText.substring(0, length) + '...'
-        : cleanText;
-}
 
-export default async function BlogListingPage() {
-    // 1. Fetch all posts directly on the server (RSC)
-    // This call is type-safe thanks to tRPC!
-    const allPosts = await api.post.getAll();
+// --- Hero Section ---
+const HeroSection = () => (
+    <section className="text-center py-20 sm:py-32 bg-indigo-50">
+        <div className="container mx-auto max-w-3xl px-4">
+            <h1 className="text-5xl sm:text-6xl font-extrabold text-gray-900 mb-4 tracking-tighter">
+                Write. Publish. Grow.
+            </h1>
+            <p className="text-lg sm:text-xl text-gray-600 mb-8">
+                BlogSpace is the simple, powerful platform for sharing your voice. Built with the best of modern web technology.
+            </p>
+            <Link
+                href="/admin/post/new"
+                className="inline-block bg-indigo-600 text-white text-lg font-semibold px-8 py-3 rounded-lg shadow-xl hover:bg-indigo-700 transition-colors duration-200"
+            >
+                Start Writing Now
+            </Link>
+        </div>
+    </section>
+);
 
-    // The HydrateClient is needed here because the Posts list uses it
-    // and we're fetching data on the server.
+// --- Features Section ---
+const FeaturesSection = () => {
+    const features = [
+        {
+            icon: PencilSquareIcon,
+            title: "Markdown Editor",
+            description: "Fast and easy content creation with built-in Markdown rendering support.",
+        },
+        {
+            icon: HomeIcon,
+            title: "Full CRUD API",
+            description: "Complete Create, Read, Update, Delete functionality powered by type-safe tRPC and Drizzle ORM.",
+        },
+        {
+            icon: CloudArrowUpIcon,
+            title: "Draft & Publish",
+            description: "Control your content lifecycle with explicit draft and published statuses.",
+        },
+    ];
+
     return (
-        <HydrateClient>
-            <main className="container mx-auto p-8 max-w-6xl">
-                <h1 className="text-5xl font-extrabold text-gray-900 mb-10">
-                    The Blog Platform
-                </h1>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {allPosts.map((post: { id: Key | null | undefined; slug: any; title: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; postsToCategories: { category: any; }[]; content: string; published: any; createdAt: { toLocaleDateString: () => string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }; }) => (
-                        <Link
-                            key={post.id}
-                            href={`/post/${post.slug}`} // Link to the individual post page
-                            className="block border rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow bg-white"
-                        >
-                            <h2 className="text-2xl font-semibold text-blue-600 mb-2 truncate">
-                                {post.title}
-                            </h2>
-
-                            {/* Display Categories */}
-                            <div className="flex flex-wrap gap-2 mb-3">
-                                {post.postsToCategories.map(({ category }) => (
-                                    <span
-                                        key={category.id}
-                                        className="text-xs bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full font-medium"
-                                    >
-                                        {category.name}
-                                    </span>
-                                ))}
-                            </div>
-
-                            {/* Content Snippet */}
-                            <p className="text-gray-600 mb-4 text-sm line-clamp-3">
-                                {getPostSnippet(post.content)}
-                            </p>
-
-                            <div className="text-sm text-gray-400">
-                                {post.published ? 'Published' : 'Draft'} on {post.createdAt.toLocaleDateString()}
-                            </div>
-                        </Link>
+        <section className="py-20">
+            <div className="container mx-auto max-w-6xl px-4">
+                <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-12">Key Features</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    {features.map((feature) => (
+                        <div key={feature.title} className="text-center p-6 border rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300">
+                            <feature.icon className="h-10 w-10 text-indigo-600 mx-auto mb-4" />
+                            <h3 className="text-xl font-semibold text-gray-800 mb-3">{feature.title}</h3>
+                            <p className="text-gray-600">{feature.description}</p>
+                        </div>
                     ))}
                 </div>
+            </div>
+        </section>
+    );
+};
 
-                {allPosts.length === 0 && (
-                    <div className="text-center text-gray-500 py-12">
-                        No posts found. Time to create one!
-                    </div>
-                )}
-            </main>
-        </HydrateClient>
+
+export default function LandingPage() {
+    return (
+        <>
+            <HeroSection />
+            <FeaturesSection />
+            {/* The Footer is now in layout.tsx, fulfilling the third section */}
+        </>
     );
 }
