@@ -10,7 +10,8 @@ const EyeIcon = (props: { className: string }) => <svg {...props} xmlns="http://
 
 export default function DashboardPage() {
     // 1. Fetch all posts (including drafts)
-    const { data: posts, isLoading, isError, error } = api.post.getAll.useQuery();
+    // FIX: Added default value "=[]" to posts to resolve 'possibly undefined' error (Line 35)
+    const { data: posts = [], isLoading, isError, error } = api.post.getAll.useQuery();
     const utils = api.useUtils();
 
     // 2. Delete Mutation (used directly on the dashboard list)
@@ -55,7 +56,6 @@ export default function DashboardPage() {
     return (
         <div className="container mx-auto p-4 sm:p-8 max-w-6xl">
             <div className="flex justify-between items-center mb-8">
-                {/* Ensure h1 text color toggles */}
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-gray-50">Post Dashboard</h1>
                 <Link href="/admin/post/new" className="bg-indigo-600 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm sm:text-base">
                     + New Post
@@ -70,24 +70,19 @@ export default function DashboardPage() {
                     </Link>
                 </div>
             ) : (
-                // FIX: Add dark mode classes to the outer shadow/background container
                 <div className="shadow-xl rounded-lg overflow-x-auto dark:bg-gray-800 dark:shadow-2xl">
-                    {/* FIX: Set dark mode background and border for the table head */}
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead className="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                {/* FIX: Ensure header text color works in dark mode */}
                                 <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px] dark:text-gray-300">Title</th>
                                 <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell dark:text-gray-300">Categories</th>
                                 <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Status</th>
                                 <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px] dark:text-gray-300">Actions</th>
                             </tr>
                         </thead>
-                        {/* FIX: Set dark mode background and border for the table body */}
                         <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                             {posts.map((post) => (
                                 <tr key={post.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    {/* FIX: Ensure table cell text color toggles */}
                                     <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 truncate max-w-xs dark:text-gray-100">
                                         {post.title}
                                     </td>
@@ -101,9 +96,7 @@ export default function DashboardPage() {
                                         </div>
                                     </td>
                                     <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${post.published
-                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${post.published ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                                             }`}>
                                             {post.published ? 'Published' : 'Draft'}
                                         </span>
