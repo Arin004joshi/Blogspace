@@ -40,8 +40,9 @@ export function PostSearch() {
     const { data: posts, isLoading, isFetching } = api.post.search.useQuery(
         { query: debouncedSearchQuery },
         {
-            // Keep previous data while fetching new results to avoid flickering 
-            keepPreviousData: true,
+            // FIX: Replaced deprecated 'keepPreviousData: true' with the correct TanStack Query v5 syntax.
+            // This prevents the flickering issue by displaying the old results while fetching new ones.
+            placeholderData: (previousData) => previousData,
         }
     );
 
