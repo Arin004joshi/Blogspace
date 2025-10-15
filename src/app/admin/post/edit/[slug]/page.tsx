@@ -4,13 +4,22 @@ import { notFound } from "next/navigation";
 import { EditPostForm } from "@/app/_components/edit-post-form";
 import { HydrateClient } from "@/trpc/server";
 
+// REMOVED: interface EditPostPageProps
+/*
 interface EditPostPageProps {
     params: {
         slug: string;
     };
 }
+*/
 
-export default async function EditPostPage({ params }: EditPostPageProps) {
+// FIX: The function signature is updated to use an inline type annotation,
+// which resolves the conflict with Next.js's internal PageProps types.
+export default async function EditPostPage({
+    params
+}: {
+    params: { slug: string };
+}) {
     // 1. Fetch the existing post data
     const post = await api.post.getBySlug({ slug: params.slug });
 
