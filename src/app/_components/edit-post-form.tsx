@@ -88,7 +88,7 @@ export function EditPostForm({
             router.push(`/admin/dashboard`);
         },
         onError: (err) => {
-            alert(`Error deleting post: ${err.message}`);
+            alert(`Error deleting category: ${err.message}`);
         },
     });
 
@@ -114,13 +114,16 @@ export function EditPostForm({
     };
 
     return (
-        <form onSubmit={handleSubmit(onUpdate)} className="space-y-6 max-w-3xl mx-auto p-6 bg-gray-50 rounded-lg shadow-lg">
+        // FIX 1: Add dark background and shadow for the form container
+        <form onSubmit={handleSubmit(onUpdate)} className="space-y-6 max-w-3xl mx-auto p-6 bg-gray-50 rounded-lg shadow-lg dark:bg-gray-800 dark:shadow-2xl">
             {/* Title Field */}
             <div>
-                <label className="block text-sm font-medium text-gray-700">Title</label>
+                {/* FIX 2: Add dark text color to label */}
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
                 <input
                     {...register("title")}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3"
+                    // FIX 3: Add dark colors to the input field
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
                     placeholder="A captivating title..."
                     disabled={updatePost.isPending}
                 />
@@ -129,11 +132,13 @@ export function EditPostForm({
 
             {/* Content Editor (Markdown Support) */}
             <div>
-                <label className="block text-sm font-medium text-gray-700">Content (Markdown)</label>
+                {/* FIX 4: Add dark text color to label */}
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Content (Markdown)</label>
                 <textarea
                     {...register("content")}
                     rows={15}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3"
+                    // FIX 5: Add dark colors to the textarea field
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
                     placeholder="Write your post content here using Markdown..."
                     disabled={updatePost.isPending}
                 />
@@ -141,9 +146,12 @@ export function EditPostForm({
             </div>
 
             {/* Category Selection */}
-            <div className="border p-4 rounded-md">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Categories</label>
-                {isLoadingCategories && <p>Loading categories...</p>}
+            {/* FIX 6: Add dark border/background to the category selection box */}
+            <div className="border p-4 rounded-md dark:border-gray-700">
+                {/* FIX 7: Add dark text color to label */}
+                <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">Categories</label>
+                {/* FIX 8: Add dark text color to loading message */}
+                {isLoadingCategories && <p className="dark:text-gray-400">Loading categories...</p>}
                 <div className="flex flex-wrap gap-4">
                     {categories.map((cat) => (
                         <label key={cat.id} className="flex items-center space-x-2">
@@ -154,7 +162,8 @@ export function EditPostForm({
                                 className="rounded text-indigo-600 focus:ring-indigo-500"
                                 disabled={updatePost.isPending}
                             />
-                            <span className="text-sm text-gray-900">{cat.name}</span>
+                            {/* FIX 9: Add dark text color to category name */}
+                            <span className="text-sm text-gray-900 dark:text-gray-200">{cat.name}</span>
                         </label>
                     ))}
                 </div>
@@ -168,10 +177,12 @@ export function EditPostForm({
                     className="rounded text-green-600 focus:ring-green-500"
                     disabled={updatePost.isPending}
                 />
-                <label className="text-sm font-medium text-gray-700">Published</label>
+                {/* FIX 10: Add dark text color to label */}
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Published</label>
             </div>
 
             <div className="flex flex-col sm:flex-row justify-between gap-4 pt-4">
+                {/* Delete button action color is fine, no change needed */}
                 <button
                     type="button"
                     onClick={onDelete}
@@ -181,6 +192,7 @@ export function EditPostForm({
                     {deletePost.isPending ? "Deleting..." : "Delete Post"}
                 </button>
 
+                {/* Update button action color is fine, no change needed */}
                 <button
                     type="submit"
                     className="flex-grow py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150 disabled:opacity-50"

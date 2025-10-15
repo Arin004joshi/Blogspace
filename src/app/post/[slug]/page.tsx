@@ -1,7 +1,8 @@
 // src/app/post/[slug]/page.tsx
 import { api } from "@/trpc/server";
 import { notFound } from "next/navigation";
-import parse from "html-react-parser"; // Used to render simple content (assuming Markdown text)
+import ReactMarkdown from 'react-markdown'; // <-- NEW IMPORT
+import remarkGfm from 'remark-gfm'; // <-- NEW IMPORT
 
 interface PostPageProps {
     params: {
@@ -18,19 +19,17 @@ export default async function IndividualPostPage({ params }: PostPageProps) {
         notFound();
     }
 
-    // NOTE: If you decide to use a dedicated Markdown or Rich Text library 
-    // later (like react-markdown or Tiptap), you will replace `parse(post.content)` 
-    // with that library's rendering component.
-    const renderedContent = parse(post.content);
+    // NOTE: We now use ReactMarkdown for rendering the content.
+    // The renderedContent variable is removed as ReactMarkdown is used directly in JSX.
 
     return (
-        <article className="container mx-auto p-8 max-w-4xl bg-white shadow-xl rounded-lg my-12">
+        <article className="container mx-auto p-8 max-w-4xl bg-white shadow-xl rounded-lg my-12 dark:bg-gray-800 dark:shadow-2xl">
             <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
                 {post.title}
             </h1>
 
             {/* Categories and Date */}
-            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mb-8 border-b pb-4">
+            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mb-8 border-b pb-4 dark:text-gray-400 dark:border-gray-700">
                 <p>Published on: {post.createdAt.toLocaleDateString()}</p>
                 <div className="flex gap-2">
                     {post.postsToCategories.map(({ category }) => (
@@ -42,9 +41,14 @@ export default async function IndividualPostPage({ params }: PostPageProps) {
             </div>
 
             {/* Post Content Area */}
-            <div className="prose max-w-none">
-                {/* 'prose' is a Tailwind Typography class for nice text formatting */}
-                {renderedContent}
+            {/* The `prose` class from Tailwind Typography handles styling. */}
+            {/* We pass the Markdown string directly to the component. */}
+            <div className="prose max-w-none dark:text-gray-200">
+                <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                >
+                    {post.content}
+                </ReactMarkdown>
             </div>
         </article>
     );

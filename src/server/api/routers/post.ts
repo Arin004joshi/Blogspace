@@ -132,4 +132,47 @@ export const postRouter = createTRPCRouter({
 				.returning({ id: posts.id });
 			return deletedPost[0];
 		}),
+
+	search: publicProcedure
+		.input(z.object({
+			query: z.string().optional(),
+		}))
+		.query(async ({ input }) => {
+			if (!input.query || input.query.trim() === "") {
+				// Return all published posts if no search term is provided
+				return db.query.posts.findMany({
+					where: (post, { eq }) => eq(post.published, true),
+					with: {
+						postsToCategories: {
+							with: {
+								category: true,
+							},
+						},
+					},
+					orderBy: (posts, { desc }) => [desc(posts.createdAt)],
+				});
+			}
+
+			const searchQuery = `%${input.query.trim().toLowerCase()}%`;
+
+			return db.query.posts.findMany({
+				where: (post, { eq, or, like, and }) =>
+					and(
+						eq(post.published, true), // Only search published posts
+						or(
+							// Case-insensitive search on title and content
+							like(post.title, searchQuery),
+							like(post.content, searchQuery)
+						)
+					),
+				with: {
+					postsToCategories: {
+						with: {
+							category: true,
+						},
+					},
+				},
+				orderBy: (posts, { desc }) => [desc(posts.createdAt)],
+			});
+		}),
 });

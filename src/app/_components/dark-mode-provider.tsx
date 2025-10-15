@@ -18,7 +18,6 @@ export const DarkModeProvider = ({ children }: { children: ReactNode }) => {
     const [theme, setInternalTheme] = useState<Theme>('light');
 
     // 1. New useEffect: ONLY load the theme on the client and apply the class once.
-    // The initial theme must be determined on the client to avoid server/client mismatch.
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme') as Theme;
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -36,8 +35,18 @@ export const DarkModeProvider = ({ children }: { children: ReactNode }) => {
         document.documentElement.classList.toggle('dark', newTheme === 'dark');
     };
 
+    // 3. THE FIX: Use the functional update form to ensure non-stale state.
     const toggleTheme = () => {
-        setTheme(theme === 'light' ? 'dark' : 'light');
+        setInternalTheme(prevTheme => {
+            const newTheme = prevTheme === 'light' ? 'dark' : 'light';
+
+            // Reapply the side-effects here to ensure the DOM and localStorage update
+            // with the new theme calculated from the latest state.
+            localStorage.setItem('theme', newTheme);
+            document.documentElement.classList.toggle('dark', newTheme === 'dark');
+
+            return newTheme;
+        });
     };
 
     // The Provider wrapper is always returned, fixing the context error.

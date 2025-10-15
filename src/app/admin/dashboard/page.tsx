@@ -34,7 +34,7 @@ export default function DashboardPage() {
     if (isLoading) {
         return (
             <div className="container mx-auto p-8 max-w-6xl text-center">
-                <h1 className="text-4xl font-bold mb-8">Post Dashboard</h1>
+                <h1 className="text-4xl font-bold mb-8 dark:text-gray-50">Post Dashboard</h1>
                 <div className="flex justify-center items-center h-40">
                     <p className="text-lg text-indigo-600">Loading posts...</p>
                 </div>
@@ -55,47 +55,55 @@ export default function DashboardPage() {
     return (
         <div className="container mx-auto p-4 sm:p-8 max-w-6xl">
             <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">Post Dashboard</h1>
+                {/* Ensure h1 text color toggles */}
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-gray-50">Post Dashboard</h1>
                 <Link href="/admin/post/new" className="bg-indigo-600 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm sm:text-base">
                     + New Post
                 </Link>
             </div>
 
             {posts.length === 0 ? (
-                <div className="text-center text-gray-500 py-12 border-2 border-dashed rounded-lg">
+                <div className="text-center text-gray-500 py-12 border-2 border-dashed rounded-lg dark:text-gray-400 dark:border-gray-700">
                     <p className="text-xl mb-4">No posts found.</p>
-                    <Link href="/admin/post/new" className="text-indigo-600 hover:text-indigo-800 font-medium">
+                    <Link href="/admin/post/new" className="text-indigo-600 hover:text-indigo-800 font-medium dark:text-indigo-400 dark:hover:text-indigo-300">
                         Click here to create your first post!
                     </Link>
                 </div>
             ) : (
-                <div className="shadow-xl rounded-lg overflow-x-auto"> {/* Added overflow-x for mobile */}
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                // FIX: Add dark mode classes to the outer shadow/background container
+                <div className="shadow-xl rounded-lg overflow-x-auto dark:bg-gray-800 dark:shadow-2xl">
+                    {/* FIX: Set dark mode background and border for the table head */}
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead className="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">Title</th>
-                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Categories</th>
-                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">Actions</th>
+                                {/* FIX: Ensure header text color works in dark mode */}
+                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px] dark:text-gray-300">Title</th>
+                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell dark:text-gray-300">Categories</th>
+                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Status</th>
+                                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px] dark:text-gray-300">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        {/* FIX: Set dark mode background and border for the table body */}
+                        <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                             {posts.map((post) => (
-                                <tr key={post.id} className="hover:bg-gray-50">
-                                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 truncate max-w-xs">
+                                <tr key={post.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    {/* FIX: Ensure table cell text color toggles */}
+                                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 truncate max-w-xs dark:text-gray-100">
                                         {post.title}
                                     </td>
-                                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
+                                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell dark:text-gray-300">
                                         <div className="flex flex-wrap gap-1">
                                             {post.postsToCategories.map(({ category }) => (
-                                                <span key={category.id} className="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">
+                                                <span key={category.id} className="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full dark:bg-indigo-900 dark:text-indigo-200">
                                                     {category.name}
                                                 </span>
                                             ))}
                                         </div>
                                     </td>
                                     <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${post.published ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${post.published
+                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                                             }`}>
                                             {post.published ? 'Published' : 'Draft'}
                                         </span>
@@ -107,7 +115,7 @@ export default function DashboardPage() {
                                                 <Link
                                                     href={`/post/${post.slug}`}
                                                     target="_blank"
-                                                    className="text-blue-600 hover:text-blue-900"
+                                                    className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                                                     title="View Published Post"
                                                 >
                                                     <EyeIcon className="h-5 w-5" />
@@ -117,7 +125,7 @@ export default function DashboardPage() {
                                             {/* Edit Post link */}
                                             <Link
                                                 href={`/admin/post/edit/${post.slug}`}
-                                                className="text-indigo-600 hover:text-indigo-900"
+                                                className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                                                 title="Edit Post"
                                             >
                                                 <PencilIcon className="h-5 w-5" />
@@ -127,7 +135,7 @@ export default function DashboardPage() {
                                             <button
                                                 onClick={() => handleDelete(post.id, post.title)}
                                                 disabled={deletePost.isPending}
-                                                className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                                                className="text-red-600 hover:text-red-900 disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"
                                                 title="Delete Post"
                                             >
                                                 <TrashIcon className="h-5 w-5" />

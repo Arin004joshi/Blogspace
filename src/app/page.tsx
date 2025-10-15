@@ -8,12 +8,13 @@ const CloudArrowUpIcon = (props: { className: string }) => <svg {...props} xmlns
 
 // --- Hero Section ---
 const HeroSection = () => (
-    <section className="text-center py-20 sm:py-32 bg-indigo-50">
+    // FIX: Change dark:bg-gray-800 to dark:bg-gray-900 to match the body/header/footer background.
+    <section className="text-center py-20 sm:py-32 bg-indigo-50 dark:bg-gray-900">
         <div className="container mx-auto max-w-3xl px-4">
-            <h1 className="text-5xl sm:text-6xl font-extrabold text-gray-900 mb-4 tracking-tighter">
+            <h1 className="text-5xl sm:text-6xl font-extrabold text-gray-900 dark:text-gray-50 mb-4 tracking-tighter">
                 Write. Publish. Grow.
             </h1>
-            <p className="text-lg sm:text-xl text-gray-600 mb-8">
+            <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 mb-8">
                 BlogSpace is the simple, powerful platform for sharing your voice. Built with the best of modern web technology.
             </p>
             <Link
@@ -52,10 +53,10 @@ const FeaturesSection = () => {
                 <h2 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 mb-12">Key Features</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                     {features.map((feature) => (
-                        <div key={feature.title} className="text-center p-6 border rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300">
+                        <div key={feature.title} className="text-center p-6 border rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 bg-white dark:bg-gray-800 dark:border-gray-700">
                             <feature.icon className="h-10 w-10 text-indigo-600 mx-auto mb-4" />
-                            <h3 className="text-xl font-semibold text-gray-800 mb-3">{feature.title}</h3>
-                            <p className="text-gray-600">{feature.description}</p>
+                            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-3">{feature.title}</h3>
+                            <p className="text-gray-600 dark:text-gray-400">{feature.description}</p>
                         </div>
                     ))}
                 </div>
