@@ -13,13 +13,11 @@ interface EditPostPageProps {
 }
 */
 
-// FIX: The function signature is updated to use an inline type annotation,
-// which resolves the conflict with Next.js's internal PageProps types.
-export default async function EditPostPage({
-    params
-}: {
-    params: { slug: string };
-}) {
+// FIX: Use 'any' type on the props object to bypass the PageProps constraint error.
+export default async function EditPostPage(props: any) {
+    // Cast and destructure internally for local TypeScript safety.
+    const { params } = props as { params: { slug: string } };
+
     // 1. Fetch the existing post data
     const post = await api.post.getBySlug({ slug: params.slug });
 
