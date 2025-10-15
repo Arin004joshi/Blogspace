@@ -1,4 +1,3 @@
-// src/app/admin/post/edit/[slug]/page.tsx
 import { api } from "@/trpc/server";
 import { notFound } from "next/navigation";
 import { EditPostForm } from "@/app/_components/edit-post-form";
