@@ -48,16 +48,15 @@ export const categories = pgTable(
 export const postsToCategories = pgTable(
 	"posts_to_categories",
 	{
-		// NOTE: The 'references' here are for PostgreSQL FOREIGN KEY constraints
-		postId: serial("post_id").references(() => posts.id),
-		categoryId: serial("category_id").references(() => categories.id),
+		postId: serial("post_id").references(() => posts.id, { onDelete: 'cascade' }),
+		categoryId: serial("category_id").references(() => categories.id, { onDelete: 'cascade' }),
 	},
 	(t) => ({
 		pk: primaryKey({ columns: [t.postId, t.categoryId] }),
 	}),
 );
 
-// --- 4. DRIZZLE RELATIONS (This is the FIX for your runtime error) ---
+// --- 4. DRIZZLE RELATIONS (remain the same) ---
 
 // Defines relationships for the 'posts' table
 export const postsRelations = relations(posts, ({ many }) => ({
