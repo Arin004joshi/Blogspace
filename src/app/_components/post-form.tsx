@@ -17,21 +17,21 @@ const RHFPostSchema = z.object({
     content: z.string().min(10, "Content must be at least 10 characters."),
     published: z.boolean(),
     // RHF/HTML checkbox value is always a string array
-    categoryIds: z.array(z.string()), 
-}); 
+    categoryIds: z.array(z.string()),
+});
 
 // 2. Define the FINAL schema used for the mutation payload (the type tRPC expects).
 // This schema uses the RAW schema as a base and then performs the required transformation.
 const MutationSchema = RHFPostSchema.extend({
     // We transform the string array to a number array
-    categoryIds: z.array(z.string()).transform((val) => 
+    categoryIds: z.array(z.string()).transform((val) =>
         val.map(id => Number(id)).filter(id => !isNaN(id))
     ).optional(), // Make optional again for the final payload
 });
 
 
 // 3. Infer the types from these schemas
-type FormInput = z.infer<typeof RHFPostSchema>; 
+type FormInput = z.infer<typeof RHFPostSchema>;
 type MutationInput = z.infer<typeof MutationSchema>; // This will match your createPostSchema structure
 
 // --- END OF FINAL FIX ---
@@ -41,16 +41,16 @@ const useCategories = () => api.category.getAll.useQuery();
 export function PostForm() {
     const router = useRouter();
     const { data: categories = [], isLoading: isLoadingCategories } = useCategories();
-    
+
     const {
         register,
         handleSubmit,
         formState: { errors },
         reset,
-    } = useForm<FormInput>({ 
+    } = useForm<FormInput>({
         // 4. Use the RAW schema for the resolver validation
         // This tells RHF that the data it receives from the form is string[]
-        resolver: zodResolver(RHFPostSchema), 
+        resolver: zodResolver(RHFPostSchema),
         defaultValues: {
             title: "",
             content: "",
@@ -61,8 +61,8 @@ export function PostForm() {
 
     const createPost = api.post.create.useMutation({
         onSuccess: (postId) => {
-            alert("Post created successfully! ID: " + postId);
-            reset(); 
+            // FIX: Redirect to the dashboard after a successful post creation
+            router.push("/admin/dashboard");
         },
         onError: (err) => {
             console.error(err);
@@ -75,7 +75,7 @@ export function PostForm() {
         // Use the MutationSchema to parse and transform the data.
         // Zod performs the string[] -> number[] conversion here.
         const parsedResult = MutationSchema.safeParse(rawFormData);
-        
+
         if (!parsedResult.success) {
             console.error("Form data parsing error:", parsedResult.error);
             alert("Internal form validation failed.");
@@ -85,10 +85,10 @@ export function PostForm() {
         const mutationPayload: MutationInput = {
             ...parsedResult.data,
             // Ensure categoryIds is explicitly the number[] type or undefined
-            categoryIds: parsedResult.data.categoryIds, 
+            categoryIds: parsedResult.data.categoryIds,
         }
 
-        createPost.mutate(mutationPayload as MutationInput); 
+        createPost.mutate(mutationPayload as MutationInput);
     };
 
     return (
