@@ -4,7 +4,7 @@ import { publicProcedure, createTRPCRouter } from "../trpc";
 import { categories, posts, postsToCategories } from "@/server/db/schema";
 import { createPostSchema, updatePostSchema } from "../zod-schemas";
 import { db } from "@/server/db";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import slugify from "slugify";
 
 export const postRouter = createTRPCRouter({
@@ -149,21 +149,24 @@ export const postRouter = createTRPCRouter({
 							},
 						},
 					},
+					// FIXED orderBy structure
 					orderBy: (posts, { desc }) => [desc(posts.createdAt)],
 				});
 			}
 
-			const searchQuery = `%${input.query.trim().toLowerCase()}%`;
+			// FIX: Use TRIM() and ILIKE via raw SQL for robust searching.
+			const trimmedQuery = input.query.trim();
+			const searchPattern = `%${trimmedQuery}%`;
 
 			return db.query.posts.findMany({
-				where: (post, { eq, or, like, and }) =>
+				where: (post, { eq, and }) =>
 					and(
 						eq(post.published, true), // Only search published posts
-						or(
-							// Case-insensitive search on title and content
-							like(post.title, searchQuery),
-							like(post.content, searchQuery)
-						)
+						// Use raw SQL to apply TRIM to database fields and use ILIKE
+						sql`
+                            TRIM(${post.title}) ILIKE ${searchPattern}
+                            OR TRIM(${post.content}) ILIKE ${searchPattern}
+                        `,
 					),
 				with: {
 					postsToCategories: {
@@ -172,6 +175,7 @@ export const postRouter = createTRPCRouter({
 						},
 					},
 				},
+				// FIXED orderBy structure
 				orderBy: (posts, { desc }) => [desc(posts.createdAt)],
 			});
 		}),
