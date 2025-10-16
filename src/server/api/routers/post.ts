@@ -1,10 +1,9 @@
-// src/server/api/routers/post.ts
 import { z } from "zod";
 import { publicProcedure, createTRPCRouter } from "../trpc";
 import { categories, posts, postsToCategories } from "@/server/db/schema";
 import { createPostSchema, updatePostSchema } from "../zod-schemas";
 import { db } from "@/server/db";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import slugify from "slugify";
 
 export const postRouter = createTRPCRouter({
@@ -19,12 +18,9 @@ export const postRouter = createTRPCRouter({
 	create: publicProcedure
 		.input(createPostSchema)
 		.mutation(async ({ input }) => {
-			// Generate the slug from the title
 			const slug = slugify(input.title, { lower: true, strict: true });
 
-			// Run the create and linking in a transaction for atomicity
 			return await db.transaction(async (tx) => {
-				// 1. Insert the Post
 				const newPost = await tx
 					.insert(posts)
 					.values({
@@ -42,7 +38,6 @@ export const postRouter = createTRPCRouter({
 					throw new Error("Failed to create post.");
 				}
 
-				// 2. Link Categories (if any)
 				if (input.categoryIds && input.categoryIds.length > 0) {
 					const links = input.categoryIds.map((categoryId) => ({
 						postId: postId,
@@ -58,7 +53,6 @@ export const postRouter = createTRPCRouter({
 	// R: READ ALL (with categories included)
 	getAll: publicProcedure.query(async () => {
 		return db.query.posts.findMany({
-			// This 'with' clause requires Drizzle relations to be defined!
 			with: {
 				postsToCategories: {
 					with: {
@@ -73,7 +67,6 @@ export const postRouter = createTRPCRouter({
 	getBySlug: publicProcedure
 		.input(z.object({ slug: z.string() }))
 		.query(async ({ input }) => {
-			// Find one post by slug
 			return db.query.posts.findFirst({
 				where: (post, { eq }) => eq(post.slug, input.slug),
 				with: {
@@ -91,7 +84,6 @@ export const postRouter = createTRPCRouter({
 		.input(updatePostSchema)
 		.mutation(async ({ input }) => {
 			return await db.transaction(async (tx) => {
-				// 1. Update the Post's main fields
 				const updatedPost = await tx
 					.update(posts)
 					.set({
@@ -103,12 +95,10 @@ export const postRouter = createTRPCRouter({
 					.where(eq(posts.id, input.id))
 					.returning();
 
-				// 2. Clear existing category links
 				await tx
 					.delete(postsToCategories)
 					.where(eq(postsToCategories.postId, input.id));
 
-				// 3. Insert new category links
 				if (input.categoryIds && input.categoryIds.length > 0) {
 					const links = input.categoryIds.map((categoryId) => ({
 						postId: input.id,
@@ -125,7 +115,6 @@ export const postRouter = createTRPCRouter({
 	delete: publicProcedure
 		.input(z.object({ id: z.number() }))
 		.mutation(async ({ input }) => {
-			// Deleting the post will automatically cascade/cleanup the join table entries
 			const deletedPost = await db
 				.delete(posts)
 				.where(eq(posts.id, input.id))
@@ -139,7 +128,6 @@ export const postRouter = createTRPCRouter({
 		}))
 		.query(async ({ input }) => {
 			if (!input.query || input.query.trim() === "") {
-				// Return all published posts if no search term is provided
 				return db.query.posts.findMany({
 					where: (post, { eq }) => eq(post.published, true),
 					with: {
@@ -153,17 +141,16 @@ export const postRouter = createTRPCRouter({
 				});
 			}
 
-			const searchQuery = `%${input.query.trim().toLowerCase()}%`;
+			const trimmedQuery = input.query.trim();
+			const searchPattern = `%${trimmedQuery}%`;
 
 			return db.query.posts.findMany({
-				where: (post, { eq, or, like, and }) =>
+				where: (post, { eq, and }) =>
 					and(
-						eq(post.published, true), // Only search published posts
-						or(
-							// Case-insensitive search on title and content
-							like(post.title, searchQuery),
-							like(post.content, searchQuery)
-						)
+						eq(post.published, true), 
+						sql`
+                            TRIM(${post.title}) ILIKE ${searchPattern}
+                        `,
 					),
 				with: {
 					postsToCategories: {
@@ -175,4 +162,4 @@ export const postRouter = createTRPCRouter({
 				orderBy: (posts, { desc }) => [desc(posts.createdAt)],
 			});
 		}),
-});
+});	
