@@ -2,7 +2,7 @@
 "use client"; // <-- ENSURE IT'S A CLIENT COMPONENT
 
 import Link from "next/link";
-import { DarkModeToggle } from "./dark-mode-toggle";
+// import { DarkModeToggle } from "./dark-mode-toggle";
 
 export function AppHeader() {
     return (
@@ -21,7 +21,6 @@ export function AppHeader() {
                     <Link href="/admin/post/new" className="text-white bg-indigo-600 px-3 py-1 sm:px-4 sm:py-2 text-sm rounded-md hover:bg-indigo-700 transition-colors">
                         New Post
                     </Link>
-                    <DarkModeToggle />
                 </nav>
             </div>
         </header>
