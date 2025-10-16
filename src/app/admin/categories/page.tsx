@@ -102,8 +102,8 @@ export default function CategoryManagementPage() {
             {!isFetching && categories.length > 0 && (
                 <ul className="space-y-3">
                     {categories.map((cat) => (
-                        <li key={cat.id} className="flex justify-between items-center p-3 border rounded-md bg-gray-50 dark:bg-gray-700">
-                            <span className="font-medium text-gray-900">{cat.name} ({cat.slug})</span>
+                        <li key={cat.id} className="flex justify-between items-center p-3 border rounded-md bg-gray-50 dark:bg-gray-800">
+                            <span className="font-medium white">{cat.name} ({cat.slug})</span>
                             <button
                                 onClick={() => onDelete(cat.id)}
                                 disabled={deleteCategory.isPending}
