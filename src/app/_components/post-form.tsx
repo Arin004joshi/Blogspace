@@ -40,6 +40,8 @@ const useCategories = () => api.category.getAll.useQuery();
 
 export function PostForm() {
     const router = useRouter();
+    // FIX 1: Get tRPC utilities for cache management
+    const utils = api.useUtils();
     const { data: categories = [], isLoading: isLoadingCategories } = useCategories();
 
     const {
@@ -60,8 +62,12 @@ export function PostForm() {
     });
 
     const createPost = api.post.create.useMutation({
-        onSuccess: (postId) => {
-            // FIX: Redirect to the dashboard after a successful post creation
+        // FIX 2: Make onSuccess async and invalidate the cache
+        onSuccess: async (postId) => {
+            // Invalidate the 'getAll' query cache to force the dashboard to refetch on load
+            await utils.post.getAll.invalidate();
+
+            // Redirect to the dashboard
             router.push("/admin/dashboard");
         },
         onError: (err) => {
