@@ -4,7 +4,8 @@ import { publicProcedure, createTRPCRouter } from "../trpc";
 import { categories, posts, postsToCategories } from "@/server/db/schema";
 import { createPostSchema, updatePostSchema } from "../zod-schemas";
 import { db } from "@/server/db";
-import { and, eq, inArray, sql } from "drizzle-orm";
+// IMPORTANT: Ensure 'sql' and 'inArray' are imported
+import { and, eq, inArray, sql, exists } from "drizzle-orm";
 import slugify from "slugify";
 
 export const postRouter = createTRPCRouter({
@@ -136,38 +137,45 @@ export const postRouter = createTRPCRouter({
 	search: publicProcedure
 		.input(z.object({
 			query: z.string().optional(),
+			categoryId: z.number().optional(),
 		}))
 		.query(async ({ input }) => {
-			if (!input.query || input.query.trim() === "") {
-				// Return all published posts if no search term is provided
-				return db.query.posts.findMany({
-					where: (post, { eq }) => eq(post.published, true),
-					with: {
-						postsToCategories: {
-							with: {
-								category: true,
-							},
-						},
-					},
-					// FIXED orderBy structure
-					orderBy: (posts, { desc }) => [desc(posts.createdAt)],
-				});
+
+			// FIX 2: Initialize an array to hold all conditions
+			const whereConditions = [
+				// Mandatory condition: Must be published
+				eq(posts.published, true),
+			];
+
+			// 1. Handle text search filtering
+			if (input.query && input.query.trim() !== "") {
+				const trimmedQuery = input.query.trim();
+				const searchPattern = `%${trimmedQuery}%`;
+
+				const textFilter = sql`
+					TRIM(${posts.title}) ILIKE ${searchPattern}
+					OR TRIM(${posts.content}) ILIKE ${searchPattern}
+				`;
+
+				whereConditions.push(textFilter);
 			}
 
-			// FIX: Use TRIM() and ILIKE via raw SQL for robust searching.
-			const trimmedQuery = input.query.trim();
-			const searchPattern = `%${trimmedQuery}%`;
+			// 2. Handle category filtering (The New Logic)
+			if (input.categoryId) {
+				// Use a non-correlated subquery pattern to avoid the PostgreSQL crash
+				const matchingPostIdsSubquery = db.select({ postId: postsToCategories.postId })
+					.from(postsToCategories)
+					.where(eq(postsToCategories.categoryId, input.categoryId));
+
+				const categoryFilter = inArray(posts.id, matchingPostIdsSubquery);
+
+				whereConditions.push(categoryFilter);
+			}
 
 			return db.query.posts.findMany({
-				where: (post, { eq, and }) =>
-					and(
-						eq(post.published, true), // Only search published posts
-						// Use raw SQL to apply TRIM to database fields and use ILIKE
-						sql`
-                            TRIM(${post.title}) ILIKE ${searchPattern}
-                            OR TRIM(${post.content}) ILIKE ${searchPattern}
-                        `,
-					),
+				// FIX 3: Spread the conditions array directly into 'and'. Since the array is 
+				// guaranteed to be non-empty (at least one 'published' filter), this is safe.
+				where: and(...whereConditions),
 				with: {
 					postsToCategories: {
 						with: {
@@ -175,7 +183,6 @@ export const postRouter = createTRPCRouter({
 						},
 					},
 				},
-				// FIXED orderBy structure
 				orderBy: (posts, { desc }) => [desc(posts.createdAt)],
 			});
 		}),

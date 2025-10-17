@@ -5,7 +5,7 @@ import { api } from "@/trpc/react";
 import Link from "next/link";
 import { useState, useMemo, useEffect } from "react";
 
-// Helper hook for debouncing a value
+// Helper hook for debouncing a value (remains the same)
 function useDebounce<T>(value: T, delay: number): T {
     const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -22,7 +22,7 @@ function useDebounce<T>(value: T, delay: number): T {
     return debouncedValue;
 }
 
-// Helper function to format the content snippet
+// Helper function to format the content snippet (remains the same)
 const getPostSnippet = (content: string, length = 150) => {
     // Strip simple markdown characters like ** and * for the snippet
     const cleanText = content.replace(/(\*\*|__|\*|_|#)/g, '').trim();
@@ -34,29 +34,60 @@ const getPostSnippet = (content: string, length = 150) => {
 
 export function PostSearch() {
     const [searchQuery, setSearchQuery] = useState("");
+    // FIX 1: State for selected category ID (null/undefined means all categories)
+    const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(undefined);
+
     const debouncedSearchQuery = useDebounce(searchQuery, 500); // Debounce for 500ms
 
-    // Use the new tRPC search procedure
+    // FIX 2: Query 1: Fetch all categories for the dropdown menu
+    const { data: categories = [] } = api.category.getAll.useQuery(undefined, {
+        staleTime: Infinity,
+    });
+
+    // FIX 3: Use the updated tRPC search procedure
     const { data: posts, isLoading, isFetching } = api.post.search.useQuery(
-        { query: debouncedSearchQuery },
         {
-            // FIX: Replaced deprecated 'keepPreviousData: true' with the correct TanStack Query v5 syntax.
-            // This prevents the flickering issue by displaying the old results while fetching new ones.
+            query: debouncedSearchQuery,
+            categoryId: selectedCategoryId, // Pass the category ID
+        },
+        {
             placeholderData: (previousData) => previousData,
         }
     );
 
+    // FIX 4: Handle category dropdown change
+    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        // Convert string value from select to number or undefined
+        setSelectedCategoryId(value ? Number(value) : undefined);
+    }
+
     return (
         <div>
-            {/* Search Input Field */}
-            <div className="mb-8">
+            {/* The filter UI is here, in the same row as the search input */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                {/* Search Input Field */}
                 <input
                     type="text"
                     placeholder="Search posts by title or content..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg shadow-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
+                    className="flex-grow p-3 border border-gray-300 rounded-lg shadow-md focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
                 />
+
+                {/* CATEGORY FILTER DROPDOWN */}
+                <select
+                    onChange={handleCategoryChange}
+                    value={selectedCategoryId ?? ''} // Use empty string for unselected state
+                    className="p-3 border border-gray-300 rounded-lg shadow-md dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                >
+                    <option value="">All Categories</option>
+                    {categories.map(category => (
+                        <option key={category.id} value={category.id}>
+                            {category.name}
+                        </option>
+                    ))}
+                </select>
             </div>
 
             {/* Loading/Status Messages */}
@@ -68,7 +99,7 @@ export function PostSearch() {
                 <div className="text-center py-2 text-indigo-600 dark:text-indigo-400">Searching...</div>
             )}
 
-            {/* Post Grid (uses dark mode classes from previous fixes) */}
+            {/* Post Grid (omitted for brevity) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {posts?.map((post) => (
                     <Link
