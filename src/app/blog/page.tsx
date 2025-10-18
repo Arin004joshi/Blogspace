@@ -1,10 +1,5 @@
-// src/app/blog/page.tsx
 import { HydrateClient } from "@/trpc/server";
-// Corrected to use alias import path for the component location
 import { PostSearch } from "@/app/_components/post-search";
-
-// The static fetch logic (api.post.getAll) is removed because PostSearch handles the fetch.
-// The component no longer needs to be 'async'.
 
 export default function BlogListingPage() {
     return (
@@ -14,7 +9,6 @@ export default function BlogListingPage() {
                     The Blog Platform
                 </h1>
 
-                {/* REPLACED the static post list with the dynamic search component */}
                 <PostSearch />
 
             </main>

@@ -1,4 +1,3 @@
-// src/app/admin/categories/page.tsx
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -6,22 +5,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { api } from "@/trpc/react";
 
-// Get type from the category Zod schema
 import { createCategorySchema } from "@/server/api/zod-schemas";
 type CategoryInput = z.infer<typeof createCategorySchema>;
 
 export default function CategoryManagementPage() {
-    // 1. Fetching all categories
     const {
         data: categories = [],
         isLoading: isFetching,
         isError: isFetchError
     } = api.category.getAll.useQuery();
 
-    // tRPC utility to manually refresh the cache after mutation
     const utils = api.useUtils();
 
-    // 2. Form for creating a new category
     const {
         register,
         handleSubmit,
@@ -35,7 +30,6 @@ export default function CategoryManagementPage() {
         onSuccess: async () => {
             alert("Category created successfully!");
             reset();
-            // Invalidate the cache to force a refresh of the category list
             await utils.category.getAll.invalidate();
         },
         onError: (err) => {

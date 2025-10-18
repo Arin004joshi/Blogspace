@@ -1,6 +1,4 @@
-// src/app/page.tsx
 import Link from "next/link";
-// Simple icons for demonstration
 const HomeIcon = (props: { className: string }) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.955-8.955c.49-.49 1.285-.49 1.775 0L21.75 12m-2.25 2.25l-2.75 2.75m-6-6v6m0-6H6.75M9 6v6m0-6h2.25" /></svg>;
 const PencilSquareIcon = (props: { className: string }) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 18.07a4.5 4.5 0 01-1.897 1.13L6 20l1.128-3.372a4.5 4.5 0 011.13-1.897l8.283-8.283z" /><path strokeLinecap="round" strokeLinejoin="round" d="M10.582 18.07L16.863 11.79" /></svg>;
 const CloudArrowUpIcon = (props: { className: string }) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3.75 3.75M12 9.75L8.25 13.5m-3.75 5.25a3 3 0 01-3-3V12a2.25 2.25 0 014.5 0v3.75a2.25 2.25 0 004.5 0V12a2.25 2.25 0 014.5 0v3.75a2.25 2.25 0 004.5 0V12a3 3 0 00-3-3M15 9.75V6.75a3.75 3.75 0 00-7.5 0v3.0" /></svg>;
@@ -8,7 +6,6 @@ const CloudArrowUpIcon = (props: { className: string }) => <svg {...props} xmlns
 
 // --- Hero Section ---
 const HeroSection = () => (
-    // FIX: Change dark:bg-gray-800 to dark:bg-gray-900 to match the body/header/footer background.
     <section className="text-center py-20 sm:py-32 bg-indigo-50 dark:bg-gray-900">
         <div className="container mx-auto max-w-3xl px-4">
             <h1 className="text-5xl sm:text-6xl font-extrabold text-gray-900 dark:text-gray-50 mb-4 tracking-tighter">
@@ -71,7 +68,6 @@ export default function LandingPage() {
         <>
             <HeroSection />
             <FeaturesSection />
-            {/* The Footer is now in layout.tsx, fulfilling the third section */}
         </>
     );
 }

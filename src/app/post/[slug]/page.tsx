@@ -1,18 +1,13 @@
-// src/app/post/[slug]/page.tsx
 import { api } from "@/trpc/server";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-// FIX: Use 'any' type on the props object to bypass the PageProps constraint error.
 export default async function IndividualPostPage(props: any) {
-    // Cast and destructure params internally for local TypeScript safety.
     const { params } = props as { params: { slug: string } };
 
-    // 1. Fetch post by slug
     const post = await api.post.getBySlug({ slug: params.slug });
 
-    // 2. Handle 404
     if (!post || !post.published) {
         notFound();
     }

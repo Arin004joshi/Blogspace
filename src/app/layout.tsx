@@ -1,11 +1,10 @@
-// src/app/layout.tsx
 import "@/styles/globals.css";
 
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 
 import { TRPCReactProvider } from "@/trpc/react";
-import RootClientLayout from "./_components/root-client-layout"; // <-- NEW IMPORT
+import RootClientLayout from "./_components/root-client-layout"; 
 
 export const metadata: Metadata = {
 	title: "BlogSpace Platform",
@@ -22,11 +21,9 @@ export default function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
 	return (
-		// Add suppressHydrationWarning to HTML to allow the theme class change
 		<html lang="en" className={`${geist.variable}`} suppressHydrationWarning>
 			<body className="flex flex-col min-h-screen">
 				<TRPCReactProvider>
-					{/* Render the single client wrapper */}
 					<RootClientLayout>{children}</RootClientLayout>
 				</TRPCReactProvider>
 			</body>

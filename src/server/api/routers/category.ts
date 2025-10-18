@@ -1,4 +1,3 @@
-// src/server/api/routers/category.ts
 import { z } from "zod";
 import { publicProcedure, createTRPCRouter } from "../trpc";
 import { categories } from "@/server/db/schema";
@@ -8,8 +7,6 @@ import slugify from "slugify";
 import { eq } from "drizzle-orm";
 
 
-// Use slugify for simple slug generation (you may need to install it: npm install slugify)
-// import slugify from "slugify";
 
 export const categoryRouter = createTRPCRouter({
     // C: CREATE

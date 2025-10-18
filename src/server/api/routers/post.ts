@@ -1,10 +1,8 @@
-// src/server/api/routers/post.ts
 import { z } from "zod";
 import { publicProcedure, createTRPCRouter } from "../trpc";
 import { categories, posts, postsToCategories } from "@/server/db/schema";
 import { createPostSchema, updatePostSchema } from "../zod-schemas";
 import { db } from "@/server/db";
-// IMPORTANT: Ensure 'sql' and 'inArray' are imported
 import { and, eq, inArray, sql, exists } from "drizzle-orm";
 import slugify from "slugify";
 

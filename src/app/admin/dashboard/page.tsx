@@ -1,23 +1,18 @@
-// src/app/admin/dashboard/page.tsx
 "use client";
 
 import Link from "next/link";
 import { api } from "@/trpc/react";
-// Simple icons for demonstration
 const PencilIcon = (props: { className: string }) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 18.07a4.5 4.5 0 01-1.897 1.13L6 20l1.128-3.372a4.5 4.5 0 011.13-1.897l8.283-8.283z" /><path strokeLinecap="round" strokeLinejoin="round" d="M10.582 18.07L16.863 11.79" /></svg>;
 const TrashIcon = (props: { className: string }) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.425 4.75a.5.5 0 00-.5-.5H6.075a.5.5 0 00-.5.5L5.05 6.002m14.28 0a.75.75 0 00-.01-.15C18.17 6.326 15.86 6.5 12 6.5s-6.17-2.324-6.397-2.75A.75.75 0 005.42 6.002m14.28 0a.75.75 0 01-1.022.166L14.74 9m-4.788 0l-4.788 9m-1.022.166A1.5 1.5 0 014.25 18v2.25c0 .414.336.75.75.75h13.5a.75.75 0 00.75-.75V18a1.5 1.5 0 01-.447-1.066L14.74 9" /></svg>;
 const EyeIcon = (props: { className: string }) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.32c.3.568.8.848 1.4.848h18.128c.6 0 1.1-.28 1.4-.848a3.15 3.15 0 000-2.64c-.3-.568-.8-.848-1.4-.848H3.436c-.6 0-1.1.28-1.4.848a3.15 3.15 0 000 2.64z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 9a3 3 0 100 6 3 3 0 000-6z" /></svg>;
 
 export default function DashboardPage() {
-    // 1. Fetch all posts (including drafts)
-    // FIX: Added default value "=[]" to posts to resolve 'possibly undefined' error (Line 35)
     const { data: posts = [], isLoading, isError, error } = api.post.getAll.useQuery();
     const utils = api.useUtils();
 
-    // 2. Delete Mutation (used directly on the dashboard list)
     const deletePost = api.post.delete.useMutation({
         onSuccess: async () => {
-            await utils.post.getAll.invalidate(); // Refresh list
+            await utils.post.getAll.invalidate(); 
         },
         onError: (err) => {
             console.error(err);
@@ -31,7 +26,6 @@ export default function DashboardPage() {
         }
     };
 
-    // --- Loading and Error States (Fulfills requirement) ---
     if (isLoading) {
         return (
             <div className="container mx-auto p-8 max-w-6xl text-center">
@@ -51,7 +45,6 @@ export default function DashboardPage() {
             </div>
         );
     }
-    // --- End Loading/Error States ---
 
     return (
         <div className="container mx-auto p-4 sm:p-8 max-w-6xl">
