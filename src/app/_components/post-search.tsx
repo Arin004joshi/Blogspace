@@ -1,11 +1,9 @@
-// src/app/_components/post-search.tsx
 "use client";
 
 import { api } from "@/trpc/react";
 import Link from "next/link";
 import { useState, useMemo, useEffect } from "react";
 
-// Helper hook for debouncing a value (remains the same)
 function useDebounce<T>(value: T, delay: number): T {
     const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -22,9 +20,7 @@ function useDebounce<T>(value: T, delay: number): T {
     return debouncedValue;
 }
 
-// Helper function to format the content snippet (remains the same)
 const getPostSnippet = (content: string, length = 150) => {
-    // Strip simple markdown characters like ** and * for the snippet
     const cleanText = content.replace(/(\*\*|__|\*|_|#)/g, '').trim();
     return cleanText.length > length
         ? cleanText.substring(0, length) + '...'
@@ -34,17 +30,14 @@ const getPostSnippet = (content: string, length = 150) => {
 
 export function PostSearch() {
     const [searchQuery, setSearchQuery] = useState("");
-    // FIX 1: State for selected category ID (null/undefined means all categories)
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(undefined);
 
-    const debouncedSearchQuery = useDebounce(searchQuery, 500); // Debounce for 500ms
+    const debouncedSearchQuery = useDebounce(searchQuery, 500); 
 
-    // FIX 2: Query 1: Fetch all categories for the dropdown menu
     const { data: categories = [] } = api.category.getAll.useQuery(undefined, {
         staleTime: Infinity,
     });
 
-    // FIX 3: Use the updated tRPC search procedure
     const { data: posts, isLoading, isFetching } = api.post.search.useQuery(
         {
             query: debouncedSearchQuery,
@@ -55,10 +48,8 @@ export function PostSearch() {
         }
     );
 
-    // FIX 4: Handle category dropdown change
     const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
-        // Convert string value from select to number or undefined
         setSelectedCategoryId(value ? Number(value) : undefined);
     }
 

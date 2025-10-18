@@ -1,8 +1,6 @@
-// src/app/_components/app-header.tsx
-"use client"; // <-- ENSURE IT'S A CLIENT COMPONENT
+"use client"; 
 
 import Link from "next/link";
-// import { DarkModeToggle } from "./dark-mode-toggle";
 
 export function AppHeader() {
     return (

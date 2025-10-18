@@ -1,4 +1,3 @@
-// src/app/_components/post-form.tsx
 "use client";
 
 import { z } from "zod";
@@ -8,39 +7,28 @@ import { api } from "@/trpc/react";
 import { useRouter } from "next/navigation";
 import { createPostSchema } from "@/server/api/zod-schemas";
 
-// --- START OF FINAL FIX: RHF/Zod Type Adaptation ---
 
-// 1. Define a temporary schema that represents the RAW data coming from the HTML form.
-// This schema accepts STRING arrays for the category IDs.
 const RHFPostSchema = z.object({
     title: z.string().min(3, "Title must be at least 3 characters."),
     content: z.string().min(10, "Content must be at least 10 characters."),
     published: z.boolean(),
-    // RHF/HTML checkbox value is always a string array
     categoryIds: z.array(z.string()),
 });
 
-// 2. Define the FINAL schema used for the mutation payload (the type tRPC expects).
-// This schema uses the RAW schema as a base and then performs the required transformation.
 const MutationSchema = RHFPostSchema.extend({
-    // We transform the string array to a number array
     categoryIds: z.array(z.string()).transform((val) =>
         val.map(id => Number(id)).filter(id => !isNaN(id))
-    ).optional(), // Make optional again for the final payload
+    ).optional(), 
 });
 
 
-// 3. Infer the types from these schemas
 type FormInput = z.infer<typeof RHFPostSchema>;
-type MutationInput = z.infer<typeof MutationSchema>; // This will match your createPostSchema structure
-
-// --- END OF FINAL FIX ---
+type MutationInput = z.infer<typeof MutationSchema>; 
 
 const useCategories = () => api.category.getAll.useQuery();
 
 export function PostForm() {
     const router = useRouter();
-    // FIX 1: Get tRPC utilities for cache management
     const utils = api.useUtils();
     const { data: categories = [], isLoading: isLoadingCategories } = useCategories();
 
@@ -50,8 +38,6 @@ export function PostForm() {
         formState: { errors },
         reset,
     } = useForm<FormInput>({
-        // 4. Use the RAW schema for the resolver validation
-        // This tells RHF that the data it receives from the form is string[]
         resolver: zodResolver(RHFPostSchema),
         defaultValues: {
             title: "",
@@ -62,12 +48,9 @@ export function PostForm() {
     });
 
     const createPost = api.post.create.useMutation({
-        // FIX 2: Make onSuccess async and invalidate the cache
         onSuccess: async (postId) => {
-            // Invalidate the 'getAll' query cache to force the dashboard to refetch on load
             await utils.post.getAll.invalidate();
 
-            // Redirect to the dashboard
             router.push("/admin/dashboard");
         },
         onError: (err) => {
@@ -76,10 +59,7 @@ export function PostForm() {
         },
     });
 
-    // 5. Submit Handler: Use the RHFPostSchema to validate, then transform and mutate
     const onSubmit: SubmitHandler<FormInput> = (rawFormData) => {
-        // Use the MutationSchema to parse and transform the data.
-        // Zod performs the string[] -> number[] conversion here.
         const parsedResult = MutationSchema.safeParse(rawFormData);
 
         if (!parsedResult.success) {
@@ -90,7 +70,6 @@ export function PostForm() {
 
         const mutationPayload: MutationInput = {
             ...parsedResult.data,
-            // Ensure categoryIds is explicitly the number[] type or undefined
             categoryIds: parsedResult.data.categoryIds,
         }
 

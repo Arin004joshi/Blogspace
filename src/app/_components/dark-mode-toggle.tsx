@@ -7,17 +7,14 @@ const MoonIcon = (props: { className: string }) => <svg {...props} xmlns="http:/
 
 
 export function DarkModeToggle() {
-    // We use local state here to fix the hydration error
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    // Only call the hook if we are mounted on the client
     const { theme, toggleTheme } = useDarkMode();
 
-    // Do not render anything until mounted on the client side
     if (!mounted) {
         return (
             <button
@@ -27,7 +24,6 @@ export function DarkModeToggle() {
         );
     }
 
-    // Once mounted, render the actual button
     return (
         <button
             onClick={toggleTheme}

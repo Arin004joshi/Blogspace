@@ -1,6 +1,4 @@
-// src/app/_components/app-footer.tsx
 import Link from "next/link";
-// This can remain a Server Component
 
 export function AppFooter() {
     return (
